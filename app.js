@@ -42,7 +42,7 @@ app.get('/generate-cpu-load', function(req, res, next) {
 //this endpoint triggers the app to simulate entering an unhealthy state by causing it to return 5XX errors.
 app.get('/break', function(req, res, next) {
 	broken = true;
-	res.status(200).send('The app is now broken!')
+	res.status(200).send('The app is now working!')
 });
 
 // catch 404 and forward to error handler
