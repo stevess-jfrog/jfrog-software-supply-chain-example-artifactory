@@ -5,7 +5,7 @@ on: [push]
 jobs:
   build:
     runs-on: ubuntu-latest
-    
+
     steps:
       - name: Checkout 🛎️
         uses: actions/checkout@v4
@@ -31,7 +31,7 @@ jobs:
         with:
           build-args: UBI_VERSION=latest
           push: false
-          tags: $JF_URL/docker-local/jfrog-software-supply-chain-example-artifactory:latest
+          tags: ${{ secrets.ARTIFACTORY_URL }}/docker-local/jfrog-software-supply-chain-example-artifactory:latest
 
       - name: Build and push build info 
         uses: jfrog/setup-jfrog-cli@v3
