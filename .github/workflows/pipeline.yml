@@ -28,10 +28,12 @@ jobs:
       - name: Build and push 🐳
         id: docker_build
         uses: docker/build-push-action@v5
+        env:
+          JF_URL: ${{ secrets.ARTIFACTORY_URL }}
         with:
           build-args: UBI_VERSION=latest
           push: false
-          tags: ${{ secrets.ARTIFACTORY_URL }}/docker-local/jfrog-software-supply-chain-example-artifactory:latest
+          tags: $JF_URL/docker-local/jfrog-software-supply-chain-example-artifactory:latest
 
       - name: Build and push build info 
         uses: jfrog/setup-jfrog-cli@v3
