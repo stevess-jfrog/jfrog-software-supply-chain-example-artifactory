@@ -9,24 +9,7 @@ jobs:
     steps:
       - name: Checkout 🛎️
         uses: actions/checkout@v4
-
-      - name: Docker meta
-        id: meta
-        uses: docker/metadata-action@v5
-        with:
-          # list of Docker images to use as base name for tags
-          images: |
-            name/app          
-          # generate Docker tags based on the following events/attributes
-          tags: |
-            type=schedule
-            type=ref,event=branch
-            type=ref,event=pr
-            type=semver,pattern={{version}}
-            type=semver,pattern={{major}}.{{minor}}
-            type=semver,pattern={{major}}
-            type=sha            
-
+        
       - name: Set up QEMU 🏗️
         uses: docker/setup-qemu-action@v3
 
@@ -48,8 +31,7 @@ jobs:
         with:
           build-args: UBI_VERSION=latest
           push: false
-          tags: ${{ steps.meta.outputs.images }}
-          labels: ${{ steps.meta.outputs.labels }}
+          tags: https://strategicus.jfrog.io/docker-local/jfrog-software-supply-chain-example-artifactory:latest
 
       - name: Build and push build info 
         uses: jfrog/setup-jfrog-cli@v3
