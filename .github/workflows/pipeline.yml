@@ -1,0 +1,40 @@
+name: Build (Dependencies Resolution) / Store Binaries / Push Build Info / Scan Binaries / Store and sign RB
+
+on: [push]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout 🛎️
+        uses: actions/checkout@v4
+
+      - name: Set up QEMU 🏗️
+        uses: docker/setup-qemu-action@v3
+
+      - name: Set up Docker Buildx 🐋
+        uses: docker/setup-buildx-action@v3
+
+      - name: Login to JFrog CLI   
+        uses: jfrog/setup-jfrog-cli@v3
+        env:
+          JF_URL: ${{ secrets.ARTIFACTORY_URL }}
+          JF_ACCESS_TOKEN: ${{ secrets.ARTIFACTORY_ACCESS_TOKEN }}
+      - run: |
+          export SERVER_ID="strategicus"
+          jf c add $SERVER_ID --url=$JF_URL --access-token=$JF_ACCESS_TOKEN --interactive=false
+
+      - name: Build and push 🐳
+        id: docker_build
+        uses: docker/build-push-action@v5
+        with:
+          build-args: UBI_VERSION=latest
+          push: false
+          tags: $JF_URL/docker-local/jfrog-software-supply-chain-example-artifactory:latest
+
+      - name: Build and push build info 
+        uses: jfrog/setup-jfrog-cli@v3
+      - run: |
+          jfrog rt docker-push $JF_URL/docker-local/jfrog-software-supply-chain-example-artifactory:latest docker-local --build-name=jfrog-software-supply-chain-example-artifactory --build-number=1.0.0
+          jfrog rt bp jfrog-software-supply-chain-example-artifactory 1.0.0
