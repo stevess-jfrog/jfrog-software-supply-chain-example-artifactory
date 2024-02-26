@@ -1,0 +1,41 @@
+name: Build (Dependencies Resolution) / Store Binaries / Push Build Info / Scan Binaries / Store and sign RB
+
+on: [push]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout 🛎️
+        uses: actions/checkout@v4
+
+      - name: Set up QEMU 🏗️
+        uses: docker/setup-qemu-action@v3
+
+      - name: Set up Docker Buildx 🐋
+        uses: docker/setup-buildx-action@v3
+
+      - name: Building Docker 🐳
+        id: docker_build
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          build-args: UBI_VERSION=latest
+          push: false
+          load: true
+          tags: strategicus.jfrog.io/docker-local/jfrog-software-supply-chain-example-artifactory:${{ github.run_number }}
+          secret-files: |
+            "npmrc=./.npmrc"
+
+      - name: Pushing image/build info/scanning the build 
+        uses: jfrog/setup-jfrog-cli@v3
+        env:
+          JF_URL: ${{ secrets.JF_URL }}
+          JF_ACCESS_TOKEN: ${{ secrets.JF_ACCESS_TOKEN }}
+      - run: |
+          export SERVER_ID="strategicus"
+          jf c add $SERVER_ID --url=$JF_URL --access-token=$JF_ACCESS_TOKEN --interactive=false
+          jfrog docker push strategicus.jfrog.io/docker-local/jfrog-software-supply-chain-example-artifactory:${{ github.run_number }} --build-name=jfrog-software-supply-chain-example-artifactory --build-number=${{ github.run_id }}
+          jfrog rt bp jfrog-software-supply-chain-example-artifactory ${{ github.run_id }}
+          jf build-scan jfrog-software-supply-chain-example-artifactory ${{ github.run_id }}
