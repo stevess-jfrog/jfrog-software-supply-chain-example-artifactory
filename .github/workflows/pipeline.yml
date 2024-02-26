@@ -23,6 +23,7 @@ jobs:
           context: .
           build-args: UBI_VERSION=latest
           push: false
+          load: true
           tags: strategicus.jfrog.io/docker-local/jfrog-software-supply-chain-example-artifactory:latest
           secret-files: |
             "npmrc=./.npmrc"
