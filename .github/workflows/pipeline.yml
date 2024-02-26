@@ -38,3 +38,4 @@ jobs:
           jf c add $SERVER_ID --url=$JF_URL --access-token=$JF_ACCESS_TOKEN --interactive=false
           jfrog docker push strategicus.jfrog.io/docker-local/jfrog-software-supply-chain-example-artifactory:${{ github.run_number }} --build-name=jfrog-software-supply-chain-example-artifactory --build-number=${{ github.run_id }}
           jfrog rt bp jfrog-software-supply-chain-example-artifactory ${{ github.run_id }}
+          jf build scan jfrog-software-supply-chain-example-artifactory ${{ github.run_id }}
