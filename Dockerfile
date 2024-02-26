@@ -1,7 +1,7 @@
 FROM node:carbon
 WORKDIR /usr/src/app
 COPY package*.json ./
-RUN npm install --registry https://strategicus.jfrog.io/artifactory/api/npm/npm-virtual/
+RUN --mount=type=secret,id=npmrc,target=/root/.npmrc npm install
 COPY . .
 EXPOSE 8080
 CMD [ "npm", "start" ]

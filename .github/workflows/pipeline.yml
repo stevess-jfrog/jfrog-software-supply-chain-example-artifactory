@@ -29,9 +29,12 @@ jobs:
         id: docker_build
         uses: docker/build-push-action@v5
         with:
+          context: .
           build-args: UBI_VERSION=latest
           push: false
           tags: strategicus.jfrog.io/docker-local/jfrog-software-supply-chain-example-artifactory:latest
+          secret-files: |
+            "npmrc=./.npmrc"
 
       - name: Build and push build info 
         uses: jfrog/setup-jfrog-cli@v3
