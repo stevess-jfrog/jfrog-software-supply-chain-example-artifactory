@@ -30,10 +30,10 @@ jobs:
             "npmrc=./.npmrc"
       
       - name: Failure check
+        if: failure()
         run: |
           echo "JFROG_BUILD_STATUS=FAIL" >> $GITHUB_ENV
-        if: failure()      
-
+              
       - name: Pushing image/build info/scanning the build 
         uses: jfrog/setup-jfrog-cli@v3
         env:
@@ -42,9 +42,12 @@ jobs:
       - run: |
           export SERVER_ID="strategicus"
           jf c add $SERVER_ID --url=$JF_URL --access-token=$JF_ACCESS_TOKEN --interactive=false
-          jfrog docker push strategicus.jfrog.io/docker-local/jfrog-software-supply-chain-example-artifactory:${{ github.run_number }} --build-name=jfrog-software-supply-chain-example-artifactory --build-number=${{ github.run_id }}
-          jfrog rt bp jfrog-software-supply-chain-example-artifactory ${{ github.run_id }}
           jf build-scan jfrog-software-supply-chain-example-artifactory ${{ github.run_id }}
+          jfrog docker push strategicus.jfrog.io/docker-local/jfrog-software-supply-chain-example-artifactory:${{ github.run_number }} --build-name=jfrog-software-supply-chain-example-artifactory --build-number=${{ github.run_id }}
+          jfrog rt bce
+          jfrog rt bag
+          jfrog rt bp jfrog-software-supply-chain-example-artifactory ${{ github.run_id }}
+  
 
 
           
