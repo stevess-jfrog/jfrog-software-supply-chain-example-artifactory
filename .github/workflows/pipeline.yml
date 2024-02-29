@@ -42,8 +42,9 @@ jobs:
       - run: |
           export SERVER_ID="strategicus"
           jf c add $SERVER_ID --url=$JF_URL --access-token=$JF_ACCESS_TOKEN --interactive=false
-          jf build-scan jfrog-software-supply-chain-example-artifactory ${{ github.run_id }}
+          jf docker scan strategicus.jfrog.io/docker-local/jfrog-software-supply-chain-example-artifactory:${{ github.run_number }}
           jfrog docker push strategicus.jfrog.io/docker-local/jfrog-software-supply-chain-example-artifactory:${{ github.run_number }} --build-name=jfrog-software-supply-chain-example-artifactory --build-number=${{ github.run_id }}
+          jf build-scan jfrog-software-supply-chain-example-artifactory ${{ github.run_id }}
           jfrog rt bce
           jfrog rt bag
           jfrog rt bp jfrog-software-supply-chain-example-artifactory ${{ github.run_id }}
