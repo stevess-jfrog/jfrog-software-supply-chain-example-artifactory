@@ -2,7 +2,7 @@ version: 1
 type: npm
 resolver:
     repo: npm-remote
-    serverId: strategicuswest
+    serverId: strategicus
 deployer:
     repo: npm-local
-    serverId: strategicuswest
+    serverId: strategicus
