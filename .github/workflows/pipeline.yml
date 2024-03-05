@@ -48,8 +48,13 @@ jobs:
       
       - name: Failure check
         if: failure()
+        env:
+          JF_URL: ${{ secrets.JF_URL }}
+          JF_ACCESS_TOKEN: ${{ secrets.JF_ACCESS_TOKEN }}
         run: |
           echo "JFROG_BUILD_STATUS=FAIL" >> $GITHUB_ENV
+          export SERVER_ID="strategicus"
+          jf c add $SERVER_ID --url=$JF_URL --access-token=$JF_ACCESS_TOKEN --interactive=false  
           jf ca
 
       - name: Publish Build Information
