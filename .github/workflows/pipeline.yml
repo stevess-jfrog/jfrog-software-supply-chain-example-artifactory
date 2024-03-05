@@ -50,6 +50,7 @@ jobs:
         if: failure()
         run: |
           echo "JFROG_BUILD_STATUS=FAIL" >> $GITHUB_ENV
+          jf ca
 
       - name: Publish Build Information
         run: |
