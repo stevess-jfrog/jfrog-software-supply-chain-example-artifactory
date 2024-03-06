@@ -8,6 +8,7 @@ jobs:
     env:
       JFROG_BUILD_STATUS: PASS
       JF_URL: ${{ secrets.JF_URL }}
+      JF_URL_EAST: ${{ secrets.JF_URL_EAST }}
       JF_ACCESS_TOKEN: ${{ secrets.JF_ACCESS_TOKEN }}
     steps:
       - name: Checkout 🛎️
@@ -24,6 +25,8 @@ jobs:
       - run: |
           export SERVER_ID="strategicus"
           jf c add $SERVER_ID --url=$JF_URL --access-token=$JF_ACCESS_TOKEN --interactive=false   
+          export SERVER_ID_EAST="strategicuseast"
+          jf c add $SERVER_ID_EAST --url=$JF_URL_EAST --access-token=$JF_ACCESS_TOKEN --interactive=false
 
       - name: Building Docker 🐳
         id: docker_build
@@ -33,17 +36,17 @@ jobs:
           build-args: UBI_VERSION=latest
           push: false
           load: true
-          tags: strategicus.jfrog.io/docker-local/jfrog-software-supply-chain-example-artifactory:${{ github.run_number }}
+          tags: strategicuseast.jfrog.io/docker-local/jfrog-software-supply-chain-example-artifactory:${{ github.run_number }}
           secret-files: |
             "npmrc=./.npmrc"
             
       - name: Xray Scan Docker image
         run: |
-          jf docker scan strategicus.jfrog.io/docker-local/jfrog-software-supply-chain-example-artifactory:${{ github.run_number }}
+          jf docker scan strategicuseast.jfrog.io/docker-local/jfrog-software-supply-chain-example-artifactory:${{ github.run_number }}
             
       - name: Deploying Docker
         run: | 
-          jfrog docker push strategicus.jfrog.io/docker-local/jfrog-software-supply-chain-example-artifactory:${{ github.run_number }} --build-name=jfrog-software-supply-chain-example-artifactory --build-number=${{ github.run_id }}
+          jfrog docker push strategicuseast.jfrog.io/docker-local/jfrog-software-supply-chain-example-artifactory:${{ github.run_number }} --build-name=jfrog-software-supply-chain-example-artifactory --build-number=${{ github.run_id }}
       
       - name: Failure check
         if: failure()
@@ -68,7 +71,7 @@ jobs:
           
       - name: Store and Sign the RB
         run: |
-          curl --location 'https://strategicus.jfrog.io/lifecycle/api/v2/release_bundle' \
+          curl --location 'https://strategicuseast.jfrog.io/lifecycle/api/v2/release_bundle' \
           --header 'Content-Type: application/json' \
           --header 'X-JFrog-Signing-Key-Name: ${{ secrets.JPD_GPG_KEY }}' \
           --header 'Authorization: Bearer ${{ secrets.JF_ACCESS_TOKEN }}' \

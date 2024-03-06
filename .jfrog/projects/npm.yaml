@@ -5,4 +5,4 @@ resolver:
     serverId: strategicus
 deployer:
     repo: npm-local
-    serverId: strategicus
+    serverId: strategicuseast
