@@ -67,13 +67,11 @@ jobs:
           jf build-scan jfrog-software-supply-chain-example-artifactory ${{ github.run_id }}
           
       - name: Store and Sign the RB
-        env:
-          JPD_GPG_KEY: GPG-Steves
         run: |
           curl --location 'https://strategicus.jfrog.io/lifecycle/api/v2/release_bundle' \
           --header 'Content-Type: application/json' \
-          --header 'X-JFrog-Signing-Key-Name: $JPD_GPG_KEY' \
-          --header 'Authorization: Bearer eyJ2ZXIiOiIyIiwidHlwIjoiSldUIiwiYWxnIjoiUlMyNTYiLCJraWQiOiJ1U0FoMFdnaU82eTR2aDRZOXVqYUNkaC1HRE5oTW14aURtbzNFT3ZuWk9RIn0.eyJzdWIiOiJqZmFjQDAxaDBrYnhhd3k3NjdhMXIzd3B0M2oxNjVkL3VzZXJzL3N0ZXZlc3MiLCJzY3AiOiJhcHBsaWVkLXBlcm1pc3Npb25zL2FkbWluIiwiYXVkIjoiKkAqIiwiaXNzIjoiamZmZUAwMDAiLCJpYXQiOjE3MDkyMzI4ODEsImp0aSI6IjMwMjAwZDJlLTdjMTAtNGU0YS05NTRlLTMxMjc3OWQ3NzcxMSJ9.aQa0QafaIMcmx55eskns_8Kn75r0MXm4iz0VahLrw7cjpomj0J6JKRypz2DodQ-DEZLcvbCxFVYA3RvZssz4VnOwiIMzGKeD3oa1sx-zeyyU9FJ0c2r-98FryrMYyXWL8_hTrUnbiwKAV3vutc7168iA1zOQGE0Dt7ps3E0rmGCFtacbubJnaC_mlMg24XtFhMpu4gmF_etHbcZTqV4uzHbdPCOsK40qHAKRfWlNoC8RX6DrzBHYrqP6gEleqLCNTR8j_dL8l-s9LvHRf2jj4jlya80V2qx-GdXcKNmKicg1Tu9P69qptPqFEBXYDlh1jxzCle0e3d5MA2PI__sTMA' \
+          --header 'X-JFrog-Signing-Key-Name: ${{ secrets.JPD_GPG_KEY }}' \
+          --header 'Authorization: Bearer ${{ secrets.JF_ACCESS_TOKEN }}' \
           --data '{
             "release_bundle_name": "jfrog-software-supply-chain-example-artifactory-bundle",
             "release_bundle_version": "${{ github.run_number }}",
