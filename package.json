@@ -15,10 +15,10 @@
     "pug": "~3.0.2",
     "lowdb": "^1.0.0",
     "morgan": "~1.9.0",
-    "npm": "^6.13.3"
+    "npm": "^10.5.0"
   },
   "devDependencies": {
-    "mocha": "^5.0.5",
-    "supertest": "^3.0.0"
+    "mocha": "^10.3.0",
+    "supertest": "^6.3.4"
   }
 }
