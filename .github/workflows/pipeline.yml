@@ -92,8 +92,8 @@ jobs:
           }'
       
       - name: Promote the RB to TEST env
-          run: |
-            jf rbp --signing-key=${{ secrets.JPD_GPG_KEY }} jfrog-software-supply-chain-example-artifactory-bundle ${{ github.run_number }} TEST
+        run: |
+          jf rbp --signing-key=${{ secrets.JPD_GPG_KEY }} jfrog-software-supply-chain-example-artifactory-bundle ${{ github.run_number }} TEST
   
 
 
