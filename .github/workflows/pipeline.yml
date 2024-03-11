@@ -1,4 +1,4 @@
-name: Build (Dependencies Resolution) / Store Binaries / Push Build Info / Scan Binaries / Store and sign RB
+name: Build (Dependencies Resolution) / Store Binaries / Push Build Info / Scan Binaries / Store and sign RB / Promote RB to test
 
 on: [push]
 
@@ -7,7 +7,7 @@ jobs:
     runs-on: ubuntu-latest
     env:
       JFROG_BUILD_STATUS: PASS
-      JF_URL: ${{ secrets.JF_URL }}
+      JF_URL_WEST: ${{ secrets.JF_URL_WEST }}
       JF_URL_EAST: ${{ secrets.JF_URL_EAST }}
       JF_ACCESS_TOKEN: ${{ secrets.JF_ACCESS_TOKEN }}
     steps:
@@ -17,14 +17,14 @@ jobs:
       - name: Set up QEMU 🏗️
         uses: docker/setup-qemu-action@v3
 
-      - name: Set up Docker Buildx 🐳 🐳
+      - name: Set up Docker Buildx 🐳 
         uses: docker/setup-buildx-action@v3
 
       - name: Setup JFrog CLI 
         uses: jfrog/setup-jfrog-cli@v4
       - run: |
-          export SERVER_ID="strategicus"
-          jf c add $SERVER_ID --url=$JF_URL --access-token=$JF_ACCESS_TOKEN --interactive=false   
+          export SERVER_ID_WEST="strategicuswest"
+          jf c add $SERVER_ID_WEST --url=$JF_URL_WEST --access-token=$JF_ACCESS_TOKEN --interactive=false   
           export SERVER_ID_EAST="strategicuseast"
           jf c add $SERVER_ID_EAST --url=$JF_URL_EAST --access-token=$JF_ACCESS_TOKEN --interactive=false
 
@@ -36,29 +36,30 @@ jobs:
           build-args: UBI_VERSION=latest
           push: false
           load: true
-          tags: strategicuseast.jfrog.io/docker-local/jfrog-software-supply-chain-example-artifactory:${{ github.run_number }}
+          tags: strategicuswest.jfrog.io/docker-dev-local/jfrog-software-supply-chain-example-artifactory:${{ github.run_number }}
           secret-files: |
             "npmrc=./.npmrc"
             
       - name: Xray Scan Docker image
         run: |
-          jf docker scan strategicuseast.jfrog.io/docker-local/jfrog-software-supply-chain-example-artifactory:${{ github.run_number }}
+          jf docker scan strategicuswest.jfrog.io/docker-dev-local/jfrog-software-supply-chain-example-artifactory:${{ github.run_number }}
             
       - name: Deploying Docker
         run: | 
-          jfrog docker push strategicuseast.jfrog.io/docker-local/jfrog-software-supply-chain-example-artifactory:${{ github.run_number }} --build-name=jfrog-software-supply-chain-example-artifactory --build-number=${{ github.run_id }}
+          jfrog docker push strategicuswest.jfrog.io/docker-dev-local/jfrog-software-supply-chain-example-artifactory:${{ github.run_number }} --build-name=jfrog-software-supply-chain-example-artifactory --build-number=${{ github.run_id }}
       
       - name: Failure check
         if: failure()
         run: |
           echo "JFROG_BUILD_STATUS=FAIL" >> $GITHUB_ENV
-          export SERVER_ID="strategicus-failure"
-          jf c add $SERVER_ID --url=$JF_URL --access-token=$JF_ACCESS_TOKEN --interactive=false  
+          export SERVER_ID_FAILURE="strategicus_failure"
+          jf c add $SERVER_ID_FAILURE --url=$JF_URL_WEST --access-token=$JF_ACCESS_TOKEN --interactive=false   
           jf ca
 
       - name: Publish Build Information
         run: |
-            jf c use strategicuseast 
+            export SERVER_ID_WEST="strategicuswest"
+            jf c use $SERVER_ID_WEST
             # Collect environment variables for the build
             jf rt bce
             # Collect VCS details from git and add them to the build
@@ -72,7 +73,7 @@ jobs:
           
       - name: Store and Sign the RB
         run: |
-          curl --location 'https://strategicuseast.jfrog.io/lifecycle/api/v2/release_bundle' \
+          curl --location 'https://strategicuswest.jfrog.io/lifecycle/api/v2/release_bundle' \
           --header 'Content-Type: application/json' \
           --header 'X-JFrog-Signing-Key-Name: ${{ secrets.JPD_GPG_KEY }}' \
           --header 'Authorization: Bearer ${{ secrets.JF_ACCESS_TOKEN }}' \
@@ -90,6 +91,13 @@ jobs:
               ]
             }
           }'
+
+      - name: Sleep for 1 minute
+        run: sleep 60
+
+      - name: Promote the RB to TEST env
+        run: |
+          jf rbp --signing-key=${{ secrets.JPD_GPG_KEY }} jfrog-software-supply-chain-example-artifactory-bundle ${{ github.run_number }} TEST
   
 
 
