@@ -58,6 +58,7 @@ jobs:
 
       - name: Publish Build Information
         run: |
+            export SERVER_ID_WEST="strategicuswest"
             jf c use $SERVER_ID_WEST
             # Collect environment variables for the build
             jf rt bce
