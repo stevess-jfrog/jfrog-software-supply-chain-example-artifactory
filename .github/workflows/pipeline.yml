@@ -5,6 +5,7 @@ on: [push]
 jobs:
   build:
     runs-on: ubuntu-latest
+    environment: dev
     env:
       JFROG_BUILD_STATUS: PASS
       JF_URL_WEST: ${{ secrets.JF_URL_WEST }}
@@ -69,8 +70,11 @@ jobs:
             
       - name: Xray Scan Build
         run: |
-          jf build-scan jfrog-software-supply-chain-example-artifactory ${{ github.run_id }}
-          
+          jf build-scan jfrog-software-supply-chain-example-artifactory ${{ github.run_id }}    
+  rb-promotion-test:
+    runs-on: ubuntu-latest
+    environment: test
+    steps:
       - name: Store and Sign the RB
         run: |
           curl --location 'https://strategicuswest.jfrog.io/lifecycle/api/v2/release_bundle' \
@@ -98,7 +102,27 @@ jobs:
       - name: Promote the RB to TEST env
         run: |
           jf rbp --signing-key=${{ secrets.JPD_GPG_KEY }} jfrog-software-supply-chain-example-artifactory-bundle ${{ github.run_number }} TEST
-  
+  rb-promotion-qa:
+    runs-on: ubuntu-latest
+    environment: qa
+    steps:
+      - name: Sleep for 1 minute
+        run: sleep 60
+
+      - name: Promote the RB to QA env
+        run: |
+          jf rbp --signing-key=${{ secrets.JPD_GPG_KEY }} jfrog-software-supply-chain-example-artifactory-bundle ${{ github.run_number }} QA
+  rb-promotion-prod:
+    runs-on: ubuntu-latest
+    environment: prod
+    steps:
+      - name: Sleep for 1 minute
+        run: sleep 60
+        
+      - name: Promote the RB to QA env
+        run: |
+          jf rbp --signing-key=${{ secrets.JPD_GPG_KEY }} jfrog-software-supply-chain-example-artifactory-bundle ${{ github.run_number }} PROD
+            
 
 
           
