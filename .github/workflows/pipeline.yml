@@ -74,7 +74,16 @@ jobs:
   rb-promotion-test:
     runs-on: ubuntu-latest
     environment: test
+    env:
+      JF_URL_WEST: ${{ secrets.JF_URL_WEST }}
+      JF_ACCESS_TOKEN: ${{ secrets.JF_ACCESS_TOKEN }}
     steps:
+      - name: Setup JFrog CLI 
+        uses: jfrog/setup-jfrog-cli@v4
+      - run: |
+          export SERVER_ID_WEST="strategicuswest"
+          jf c add $SERVER_ID_WEST --url=$JF_URL_WEST --access-token=$JF_ACCESS_TOKEN --interactive=false 
+
       - name: Store and Sign the RB
         run: |
           curl --location 'https://strategicuswest.jfrog.io/lifecycle/api/v2/release_bundle' \
@@ -105,9 +114,15 @@ jobs:
   rb-promotion-qa:
     runs-on: ubuntu-latest
     environment: qa
+    env:
+      JF_URL_WEST: ${{ secrets.JF_URL_WEST }}
+      JF_ACCESS_TOKEN: ${{ secrets.JF_ACCESS_TOKEN }}
     steps:
-      - name: Sleep for 1 minute
-        run: sleep 60
+      - name: Setup JFrog CLI 
+        uses: jfrog/setup-jfrog-cli@v4
+      - run: |
+          export SERVER_ID_WEST="strategicuswest"
+          jf c add $SERVER_ID_WEST --url=$JF_URL_WEST --access-token=$JF_ACCESS_TOKEN --interactive=false 
 
       - name: Promote the RB to QA env
         run: |
@@ -115,9 +130,15 @@ jobs:
   rb-promotion-prod:
     runs-on: ubuntu-latest
     environment: prod
+    env:
+      JF_URL_WEST: ${{ secrets.JF_URL_WEST }}
+      JF_ACCESS_TOKEN: ${{ secrets.JF_ACCESS_TOKEN }}      
     steps:
-      - name: Sleep for 1 minute
-        run: sleep 60
+      - name: Setup JFrog CLI 
+        uses: jfrog/setup-jfrog-cli@v4
+      - run: |
+          export SERVER_ID_WEST="strategicuswest"
+          jf c add $SERVER_ID_WEST --url=$JF_URL_WEST --access-token=$JF_ACCESS_TOKEN --interactive=false 
         
       - name: Promote the RB to QA env
         run: |
