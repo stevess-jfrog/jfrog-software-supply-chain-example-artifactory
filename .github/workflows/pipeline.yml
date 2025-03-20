@@ -1,3 +1,6 @@
+
+# Author: Steves Sestari | JFrog - stevess@jfrog.com
+
 name: Build (Dependencies Resolution) / Store Binaries / Push Build Info / Scan Binaries / Store and sign RB / Promote RB to test
 
 on: [push]
@@ -5,11 +8,16 @@ on: [push]
 jobs:
   build:
     runs-on: ubuntu-latest
+    # By selecting a environment you can add approvers and decide if you want to execute an specific job 
     environment: dev
     env:
+      # Variable used to control the pass/fail flow
       JFROG_BUILD_STATUS: PASS
+      # Secret created on GitHub Action repo settings containing the JPD URL located on US West  
       JF_URL_WEST: ${{ secrets.JF_URL_WEST }}
+      # Secret created on GitHub Action repo settings containing the JPD URL located on US East  
       JF_URL_EAST: ${{ secrets.JF_URL_EAST }}
+      # Access Token obtained on the JPD and created as a secret within GitHub Action  
       JF_ACCESS_TOKEN: ${{ secrets.JF_ACCESS_TOKEN }}
     steps:
       - name: Checkout 🛎️
@@ -23,6 +31,7 @@ jobs:
 
       - name: Setup JFrog CLI 
         uses: jfrog/setup-jfrog-cli@v4
+      # More info on this command - https://docs.jfrog-applications.jfrog.io/jfrog-applications/jfrog-cli/configurations/jfrog-platform-configuration#adding-and-editing-configured-servers  
       - run: |
           export SERVER_ID_WEST="strategicuswest"
           jf c add $SERVER_ID_WEST --url=$JF_URL_WEST --access-token=$JF_ACCESS_TOKEN --interactive=false   
@@ -40,11 +49,11 @@ jobs:
           tags: strategicuswest.jfrog.io/docker-dev-local/jfrog-software-supply-chain-example-artifactory:${{ github.run_number }}
           secret-files: |
             "npmrc=./.npmrc"
-            
+      # More info on this command - https://docs.jfrog-applications.jfrog.io/jfrog-applications/jfrog-cli/cli-for-jfrog-security/scan-your-binaries#scanning-docker-containers-on-the-local-file-system    
       - name: Xray Scan Docker image
         run: |
           jf docker scan strategicuswest.jfrog.io/docker-dev-local/jfrog-software-supply-chain-example-artifactory:${{ github.run_number }}
-            
+      # More info on this command - https://docs.jfrog-applications.jfrog.io/jfrog-applications/jfrog-cli/cli-for-jfrog-artifactory/package-managers-integration#pushing-docker-images-using-the-docker-client    
       - name: Deploying Docker
         run: | 
           jfrog docker push strategicuswest.jfrog.io/docker-dev-local/jfrog-software-supply-chain-example-artifactory:${{ github.run_number }} --build-name=jfrog-software-supply-chain-example-artifactory --build-number=${{ github.run_id }}
@@ -56,7 +65,9 @@ jobs:
           export SERVER_ID_FAILURE="strategicus_failure"
           jf c add $SERVER_ID_FAILURE --url=$JF_URL_WEST --access-token=$JF_ACCESS_TOKEN --interactive=false   
           jf ca
-
+      # More info on bce,bag, and bp commands - # More info on this command - https://docs.jfrog-applications.jfrog.io/jfrog-applications/jfrog-cli/cli-for-jfrog-artifactory/package-managers-integration#pushing-docker-images-using-the-docker-client 
+      # https://docs.jfrog-applications.jfrog.io/jfrog-applications/jfrog-cli/cli-for-jfrog-artifactory/build-integration#collecting-information-from-git
+      # https://docs.jfrog-applications.jfrog.io/jfrog-applications/jfrog-cli/cli-for-jfrog-artifactory/build-integration#publishing-build-info  
       - name: Publish Build Information
         run: |
             export SERVER_ID_WEST="strategicuswest"
@@ -67,11 +78,12 @@ jobs:
             jf rt bag
             # Publish build info
             jf rt bp jfrog-software-supply-chain-example-artifactory ${{ github.run_id }}  
-            
+      # More info on this command - https://docs.jfrog-applications.jfrog.io/jfrog-applications/jfrog-cli/cli-for-jfrog-security/scan-published-builds#scanning-published-builds     
       - name: Xray Scan Build
         run: |
           jf build-scan jfrog-software-supply-chain-example-artifactory ${{ github.run_id }}    
   rb-promotion-test:
+    needs: build
     runs-on: ubuntu-latest
     environment: test
     env:
@@ -83,7 +95,7 @@ jobs:
       - run: |
           export SERVER_ID_WEST="strategicuswest"
           jf c add $SERVER_ID_WEST --url=$JF_URL_WEST --access-token=$JF_ACCESS_TOKEN --interactive=false 
-
+      # More info on how to store and sign a Release Bundle - https://jfrog.com/help/r/jfrog-rest-apis/create-release-bundle-v2-version
       - name: Store and Sign the RB
         run: |
           curl --location 'https://strategicuswest.jfrog.io/lifecycle/api/v2/release_bundle' \
@@ -107,11 +119,12 @@ jobs:
 
       - name: Sleep for 1 minute
         run: sleep 60
-
+      # More info on how to promote a Release Bundle - https://docs.jfrog-applications.jfrog.io/jfrog-applications/jfrog-cli/cli-for-jfrog-artifactory/release-lifecycle-management#promoting-a-release-bundle      
       - name: Promote the RB to TEST env
         run: |
           jf rbp --signing-key=${{ secrets.JPD_GPG_KEY }} jfrog-software-supply-chain-example-artifactory-bundle ${{ github.run_number }} TEST
   rb-promotion-qa:
+    needs: rb-promotion-test
     runs-on: ubuntu-latest
     environment: qa
     env:
@@ -128,6 +141,7 @@ jobs:
         run: |
           jf rbp --signing-key=${{ secrets.JPD_GPG_KEY }} jfrog-software-supply-chain-example-artifactory-bundle ${{ github.run_number }} QA
   rb-promotion-prod:
+    needs: rb-promotion-qa
     runs-on: ubuntu-latest
     environment: prod
     env:
