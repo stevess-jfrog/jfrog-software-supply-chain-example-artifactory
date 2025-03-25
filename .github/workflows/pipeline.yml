@@ -13,7 +13,7 @@ permissions:
 
 env:
   # Var created on GitHub Action repo settings containing the JPD  
-  JF_URL: ${{ vars.JF_URL }}
+  JF_URL: ${{ secrets.JF_URL }}
   # Var created on GitHub Action repo settings containing the JPD ID
   # SERVER_ID: ${{ vars.SERVER_ID }}
 
