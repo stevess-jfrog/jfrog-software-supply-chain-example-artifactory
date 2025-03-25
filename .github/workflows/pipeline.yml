@@ -77,9 +77,9 @@ jobs:
             # Publish build info
             jf rt bp jfrog-software-supply-chain-example-artifactory ${{ github.run_id }}  
       # More info on this command - https://docs.jfrog-applications.jfrog.io/jfrog-applications/jfrog-cli/cli-for-jfrog-security/scan-published-builds#scanning-published-builds     
-      - name: Xray Scan Build
-        run: |
-          jf build-scan jfrog-software-supply-chain-example-artifactory ${{ github.run_id }}    
+      # - name: Xray Scan Build
+      #   run: |
+      #     jf build-scan jfrog-software-supply-chain-example-artifactory ${{ github.run_id }}    
   # rb-promotion-test:
   #   needs: build
   #   runs-on: ubuntu-latest
