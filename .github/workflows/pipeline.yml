@@ -5,13 +5,19 @@ name: Build (Dependencies Resolution) / Store Binaries / Push Build Info / Scan 
 
 on: [push]
 
+permissions:
+  # This is required for requesting the OIDC token
+  id-token: write
+  # This is required for actions/checkout
+  contents: read
+
 env:
   # Var created on GitHub Action repo settings containing the JPD  
   JF_URL: ${{ vars.JF_URL }}
   # Var created on GitHub Action repo settings containing the JPD ID
-  SERVER_ID: ${{ vars.SERVER_ID }}
+  # SERVER_ID: ${{ vars.SERVER_ID }}
   # Access Token obtained on the JPD and created as a secret within GitHub Action  
-  JF_ACCESS_TOKEN: ${{ secrets.JF_ACCESS_TOKEN }}
+  # JF_ACCESS_TOKEN: ${{ secrets.JF_ACCESS_TOKEN }}
 
 jobs:
   build:
@@ -33,9 +39,12 @@ jobs:
 
       - name: Setup JFrog CLI 
         uses: jfrog/setup-jfrog-cli@v4
+        with:
+          # Name of the OIDC provider as specified on the OIDC integration page in the JFrog Platform
+          oidc-provider-name: jfrog-cli-github-actions
       # More info on this command - https://docs.jfrog-applications.jfrog.io/jfrog-applications/jfrog-cli/configurations/jfrog-platform-configuration#adding-and-editing-configured-servers  
-      - run: |
-          jf c add $SERVER_ID --url=$JF_URL --access-token=$JF_ACCESS_TOKEN --interactive=false   
+      # - run: |
+      #     jf c add $SERVER_ID --url=$JF_URL --access-token=$JF_ACCESS_TOKEN --interactive=false   
 
       - name: Building Docker 🐳
         id: docker_build
@@ -69,7 +78,7 @@ jobs:
       # https://docs.jfrog-applications.jfrog.io/jfrog-applications/jfrog-cli/cli-for-jfrog-artifactory/build-integration#publishing-build-info  
       - name: Publish Build Information
         run: |
-            jf c use $SERVER_ID
+            # jf c use $SERVER_ID
             # Collect environment variables for the build
             jf rt bce
             # Collect VCS details from git and add them to the build
