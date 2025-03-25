@@ -16,8 +16,6 @@ env:
   JF_URL: ${{ vars.JF_URL }}
   # Var created on GitHub Action repo settings containing the JPD ID
   # SERVER_ID: ${{ vars.SERVER_ID }}
-  # Access Token obtained on the JPD and created as a secret within GitHub Action  
-  # JF_ACCESS_TOKEN: ${{ secrets.JF_ACCESS_TOKEN }}
 
 jobs:
   build:
@@ -71,7 +69,7 @@ jobs:
         run: |
           echo "JFROG_BUILD_STATUS=FAIL" >> $GITHUB_ENV
           export SERVER_ID_FAILURE="customersuccess_failure"
-          jf c add $SERVER_ID_FAILURE --url=$JF_URL --access-token=$JF_ACCESS_TOKEN --interactive=false   
+          # jf c add $SERVER_ID_FAILURE --url=$JF_URL --access-token=$JF_ACCESS_TOKEN --interactive=false   
           jf ca
       # More info on bce,bag, and bp commands - # More info on this command - https://docs.jfrog-applications.jfrog.io/jfrog-applications/jfrog-cli/cli-for-jfrog-artifactory/package-managers-integration#pushing-docker-images-using-the-docker-client 
       # https://docs.jfrog-applications.jfrog.io/jfrog-applications/jfrog-cli/cli-for-jfrog-artifactory/build-integration#collecting-information-from-git
