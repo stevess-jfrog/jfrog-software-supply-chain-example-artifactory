@@ -43,7 +43,6 @@ jobs:
       # More info on this command - https://docs.jfrog-applications.jfrog.io/jfrog-applications/jfrog-cli/configurations/jfrog-platform-configuration#adding-and-editing-configured-servers  
       # - run: |
       #     jf c add $SERVER_ID --url=$JF_URL --access-token=$JF_ACCESS_TOKEN --interactive=false   
-
       - name: Building Docker 🐳
         id: docker_build
         uses: docker/build-push-action@v5
@@ -83,9 +82,9 @@ jobs:
             # Publish build info
             jf rt bp jfrog-software-supply-chain-example-artifactory ${{ github.run_id }}  
       # More info on this command - https://docs.jfrog-applications.jfrog.io/jfrog-applications/jfrog-cli/cli-for-jfrog-security/scan-published-builds#scanning-published-builds     
-      # - name: Xray Scan Build
-      #   run: |
-      #     jf build-scan jfrog-software-supply-chain-example-artifactory ${{ github.run_id }}    
+      - name: Xray Scan Build
+        run: |
+          jf build-scan jfrog-software-supply-chain-example-artifactory ${{ github.run_id }}    
   # rb-promotion-test:
   #   needs: build
   #   runs-on: ubuntu-latest
