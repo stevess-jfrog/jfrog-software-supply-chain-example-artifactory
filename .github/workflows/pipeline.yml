@@ -15,8 +15,7 @@ env:
   # Var created on GitHub Action repo settings containing the JPD  
   JF_URL: ${{ secrets.JF_URL }}
   # Var created on GitHub Action repo settings containing the JPD ID
-  SERVER_ID: ${{ vars.SERVER_ID }}
-  JF_ACCESS_TOKEN: ${{ secrets.JF_ACCESS_TOKEN }}
+  # SERVER_ID: ${{ vars.SERVER_ID }}
 
 jobs:
   build:
@@ -42,8 +41,8 @@ jobs:
           # Name of the OIDC provider as specified on the OIDC integration page in the JFrog Platform
           oidc-provider-name: jfrog-cli-github-actions
       # More info on this command - https://docs.jfrog-applications.jfrog.io/jfrog-applications/jfrog-cli/configurations/jfrog-platform-configuration#adding-and-editing-configured-servers  
-      - run: |
-          jf c add $SERVER_ID --url=$JF_URL --access-token=$JF_ACCESS_TOKEN --interactive=false   
+      # - run: |
+      #     jf c add $SERVER_ID --url=$JF_URL --access-token=$JF_ACCESS_TOKEN --interactive=false   
 
       - name: Building Docker 🐳
         id: docker_build
