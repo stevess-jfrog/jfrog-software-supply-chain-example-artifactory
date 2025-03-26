@@ -56,14 +56,13 @@ jobs:
           secret-files: |
             "npmrc=./.npmrc"
       # More info on this command - https://docs.jfrog-applications.jfrog.io/jfrog-applications/jfrog-cli/cli-for-jfrog-security/scan-your-binaries#scanning-docker-containers-on-the-local-file-system    
-      # - name: Xray Scan Docker image
-      #   run: |
-      #     jf docker scan customersuccess.jfrog.io/docker-dev-local/jfrog-software-supply-chain-example-artifactory:${{ github.run_number }}
+      - name: Xray Scan Docker image
+        run: |
+          jf docker scan customersuccess.jfrog.io/docker-dev-local/jfrog-software-supply-chain-example-artifactory:${{ github.run_number }}
       # More info on this command - https://docs.jfrog-applications.jfrog.io/jfrog-applications/jfrog-cli/cli-for-jfrog-artifactory/package-managers-integration#pushing-docker-images-using-the-docker-client    
       - name: Deploying Docker
         run: | 
           jfrog docker push customersuccess.jfrog.io/docker-dev-local/jfrog-software-supply-chain-example-artifactory:${{ github.run_number }} --build-name=jfrog-software-supply-chain-example-artifactory --build-number=${{ github.run_id }}
-      
       - name: Failure check
         if: failure()
         run: |
