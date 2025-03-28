@@ -1,7 +1,7 @@
 
 # Author: Steves Sestari | JFrog - stevess@jfrog.com
 
-name: Build (Dependencies Resolution) / Store Binaries / Push Build Info / Scan Binaries / Promote build from dev to prod
+name: Build (Dependencies Resolution) / Store Binaries / Push Build Info / Scan Binaries / Store and sign RB / Promote RB to test
 
 on: [push]
 
@@ -96,11 +96,35 @@ jobs:
           # Name of the OIDC provider as specified on the OIDC integration page in the JFrog Platform
           oidc-provider-name: jfrog-cli-github-actions
       # - run: |
-      #     jf c add $SERVER_ID --url=$JF_URL --access-token=$JF_ACCESS_TOKEN --interactive=false    
-      # More info on how to promote the build - https://docs.jfrog-applications.jfrog.io/jfrog-applications/jfrog-cli/binaries-management-with-jfrog-artifactory/build-integration#promoting-a-build      
-      - name: Promote the build to TEST env
+      #     jf c add $SERVER_ID --url=$JF_URL --access-token=$JF_ACCESS_TOKEN --interactive=false 
+      # More info on how to store and sign a Release Bundle - https://jfrog.com/help/r/jfrog-rest-apis/create-release-bundle-v2-version
+      - name: Store and Sign the RB
         run: |
-          jf rt bpr jfrog-software-supply-chain-example-artifactory ${{ github.run_number }} docker-test-local
+  #         curl --location 'https://customersuccess.jfrog.io/lifecycle/api/v2/release_bundle' \
+  #         --header 'Content-Type: application/json' \
+  #         --header 'X-JFrog-Signing-Key-Name: ${{ secrets.JPD_GPG_KEY }}' \
+  #         --header 'Authorization: Bearer ${{ secrets.JF_ACCESS_TOKEN }}' \
+  #         --data '{
+  #           "release_bundle_name": "jfrog-software-supply-chain-example-artifactory-bundle",
+  #           "release_bundle_version": "${{ github.run_number }}",
+  #           "source_type": "builds",
+  #           "source": {
+  #             "builds": [
+  #             {
+  #                 "build_name": "jfrog-software-supply-chain-example-artifactory",
+  #                 "build_number": "${{ github.run_id }}",
+  #                 "include_dependencies": true
+  #             }
+  #             ]
+  #           }
+  #         }'
+
+  #     - name: Sleep for 1 minute
+  #       run: sleep 60
+  #     # More info on how to promote a Release Bundle - https://docs.jfrog-applications.jfrog.io/jfrog-applications/jfrog-cli/cli-for-jfrog-artifactory/release-lifecycle-management#promoting-a-release-bundle      
+  #     - name: Promote the RB to TEST env
+  #       run: |
+  #         jf rbp --signing-key=${{ secrets.JPD_GPG_KEY }} jfrog-software-supply-chain-example-artifactory-bundle ${{ github.run_number }} TEST
   # rb-promotion-qa:
   #   needs: rb-promotion-test
   #   runs-on: ubuntu-latest
