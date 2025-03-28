@@ -101,40 +101,36 @@ jobs:
       - name: Promote the build to TEST env
         run: |
           jf rt bpr jfrog-software-supply-chain-example-artifactory ${{ github.run_id }} docker-test-local
-  # rb-promotion-qa:
-  #   needs: rb-promotion-test
-  #   runs-on: ubuntu-latest
-  #   environment: qa
-  #   env:
-  #     JF_URL_WEST: ${{ secrets.JF_URL_WEST }}
-  #     JF_ACCESS_TOKEN: ${{ secrets.JF_ACCESS_TOKEN }}
-  #   steps:
-  #     - name: Setup JFrog CLI 
-  #       uses: jfrog/setup-jfrog-cli@v4
-  #     - run: |
-  #         export SERVER_ID_WEST="strategicuswest"
-  #         jf c add $SERVER_ID_WEST --url=$JF_URL_WEST --access-token=$JF_ACCESS_TOKEN --interactive=false 
-
-  #     - name: Promote the RB to QA env
-  #       run: |
-  #         jf rbp --signing-key=${{ secrets.JPD_GPG_KEY }} jfrog-software-supply-chain-example-artifactory-bundle ${{ github.run_number }} QA
-  # rb-promotion-prod:
-  #   needs: rb-promotion-qa
-  #   runs-on: ubuntu-latest
-  #   environment: prod
-  #   env:
-  #     JF_URL_WEST: ${{ secrets.JF_URL_WEST }}
-  #     JF_ACCESS_TOKEN: ${{ secrets.JF_ACCESS_TOKEN }}      
-  #   steps:
-  #     - name: Setup JFrog CLI 
-  #       uses: jfrog/setup-jfrog-cli@v4
-  #     - run: |
-  #         export SERVER_ID_WEST="strategicuswest"
-  #         jf c add $SERVER_ID_WEST --url=$JF_URL_WEST --access-token=$JF_ACCESS_TOKEN --interactive=false 
-        
-  #     - name: Promote the RB to QA env
-  #       run: |
-  #         jf rbp --signing-key=${{ secrets.JPD_GPG_KEY }} jfrog-software-supply-chain-example-artifactory-bundle ${{ github.run_number }} PROD
+  rb-promotion-qa:
+    needs: rb-promotion-test
+    runs-on: ubuntu-latest
+    environment: qa
+    steps:
+      - name: Setup JFrog CLI 
+        uses: jfrog/setup-jfrog-cli@v4
+        with:
+          # Name of the OIDC provider as specified on the OIDC integration page in the JFrog Platform
+          oidc-provider-name: jfrog-cli-github-actions
+      # - run: |
+      #     jf c add $SERVER_ID_WEST --url=$JF_URL_WEST --access-token=$JF_ACCESS_TOKEN --interactive=false 
+      - name: Promote the build to QA env
+        run: |
+          jf rt bpr jfrog-software-supply-chain-example-artifactory ${{ github.run_id }} docker-qa-local
+  rb-promotion-prod:
+    needs: rb-promotion-qa
+    runs-on: ubuntu-latest
+    environment: prod
+    steps:
+      - name: Setup JFrog CLI 
+        uses: jfrog/setup-jfrog-cli@v4
+        with:
+          # Name of the OIDC provider as specified on the OIDC integration page in the JFrog Platform
+          oidc-provider-name: jfrog-cli-github-actions
+      # - run: |
+      #     jf c add $SERVER_ID_WEST --url=$JF_URL_WEST --access-token=$JF_ACCESS_TOKEN --interactive=false 
+      - name: Promote the build to QA env
+        run: |
+          jf rt bpr jfrog-software-supply-chain-example-artifactory ${{ github.run_id }} docker-prod-local
             
 
 
