@@ -134,7 +134,7 @@ jobs:
         run: |
           jf rt bpr jfrog-software-supply-chain-example-artifactory ${{ github.run_id }} docker-prod-local
   rb-creation:
-    needs: build-promotion-qa
+    needs: build-promotion-prod
     runs-on: ubuntu-latest
     steps:
       - name: Setup JFrog CLI 
