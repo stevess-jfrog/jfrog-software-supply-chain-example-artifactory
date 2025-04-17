@@ -91,7 +91,7 @@ jobs:
     needs: build
     runs-on: ubuntu-latest
     outputs:
-      semver-number: ${{ steps.version.outputs.SEMVER_NUMBER }}
+      semver_number: ${{ steps.version.outputs.version }}
     steps:
       - name: Checkout Code
         uses: actions/checkout@v3
@@ -154,7 +154,7 @@ jobs:
     needs: [build-promotion-prod, semver-generation]
     runs-on: ubuntu-latest
     env:
-      SEMVER_NUMBER: ${{ needs.semver-generation.outputs.semver-number }}
+      SEMVER_NUMBER: ${{ needs.semver-generation.outputs.semver_number }}
     steps:
       - name: Setup JFrog CLI 
         uses: jfrog/setup-jfrog-cli@v4
@@ -171,7 +171,7 @@ jobs:
     needs: [rb-creation,semver-generation]
     runs-on: ubuntu-latest
     env:
-      SEMVER_NUMBER: ${{ needs.semver-generation.outputs.semver-number }}
+      SEMVER_NUMBER: ${{ needs.semver-generation.outputs.semver_number }}
     steps:
       - name: Setup JFrog CLI 
         uses: jfrog/setup-jfrog-cli@v4
