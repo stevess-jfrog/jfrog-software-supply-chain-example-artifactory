@@ -12,10 +12,12 @@ permissions:
   contents: read
 
 env:
-  # Var created on GitHub Action repo settings containing the JPD  
+  # Secret created on GitHub Action repo settings containing the JPD  
   JF_URL: ${{ secrets.JF_URL }}
   # Var created on GitHub Action repo settings containing the JPD ID
   # SERVER_ID: ${{ vars.SERVER_ID }}
+  # Secret created on GitHub Action repo settings containing the GPG key name
+  SIG_KEY: ${{ secrets.JPD_GPG_KEY }}
 
 jobs:
   build:
@@ -85,7 +87,7 @@ jobs:
       - name: Xray Scan Build
         run: |
           jf build-scan jfrog-software-supply-chain-example-artifactory ${{ github.run_id }}    
-  rb-promotion-test:
+  build-promotion-test:
     needs: build
     runs-on: ubuntu-latest
     environment: test
@@ -101,8 +103,8 @@ jobs:
       - name: Promote the build to TEST env
         run: |
           jf rt bpr jfrog-software-supply-chain-example-artifactory ${{ github.run_id }} docker-test-local
-  rb-promotion-qa:
-    needs: rb-promotion-test
+  build-promotion-qa:
+    needs: build-promotion-test
     runs-on: ubuntu-latest
     environment: qa
     steps:
@@ -116,8 +118,8 @@ jobs:
       - name: Promote the build to QA env
         run: |
           jf rt bpr jfrog-software-supply-chain-example-artifactory ${{ github.run_id }} docker-qa-local
-  rb-promotion-prod:
-    needs: rb-promotion-qa
+  build-promotion-prod:
+    needs: build-promotion-qa
     runs-on: ubuntu-latest
     environment: prod
     steps:
@@ -131,7 +133,31 @@ jobs:
       - name: Promote the build to QA env
         run: |
           jf rt bpr jfrog-software-supply-chain-example-artifactory ${{ github.run_id }} docker-prod-local
-            
-
-
-          
+  rb-creation:
+    needs: build-promotion-prod
+    runs-on: ubuntu-latest
+    steps:
+      - name: Setup JFrog CLI 
+        uses: jfrog/setup-jfrog-cli@v4
+        with:
+          # Name of the OIDC provider as specified on the OIDC integration page in the JFrog Platform
+          oidc-provider-name: jfrog-cli-github-actions
+      # - run: |
+      #     jf c add $SERVER_ID_WEST --url=$JF_URL_WEST --access-token=$JF_ACCESS_TOKEN --interactive=false 
+      - name: Create a RB from the build
+        run: |
+          jf rbc --build-name=jfrog-software-supply-chain-example-artifactory --build-number=${{ github.run_id }} jfrog-software-supply-chain-example-artifactory-rb 1.0.0
+  rb-promotion:
+    needs: rb-creation
+    runs-on: ubuntu-latest
+    steps:
+      - name: Setup JFrog CLI 
+        uses: jfrog/setup-jfrog-cli@v4
+        with:
+          # Name of the OIDC provider as specified on the OIDC integration page in the JFrog Platform
+          oidc-provider-name: jfrog-cli-github-actions
+      # - run: |
+      #     jf c add $SERVER_ID_WEST --url=$JF_URL_WEST --access-token=$JF_ACCESS_TOKEN --interactive=false 
+      - name: Promote the RB created on the previous step
+        run: |
+          jf rbp --signing-key=$SIG_KEY jfrog-software-supply-chain-example-artifactory-rb 1.0.0 PROD
