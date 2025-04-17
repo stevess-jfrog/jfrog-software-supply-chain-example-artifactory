@@ -165,7 +165,7 @@ jobs:
       #     jf c add $SERVER_ID_WEST --url=$JF_URL_WEST --access-token=$JF_ACCESS_TOKEN --interactive=false 
       - name: Create a RB from the build
         run: |
-          jf rbc --build-name=jfrog-software-supply-chain-example-artifactory --build-number=${{ github.run_id }} jfrog-software-supply-chain-example-artifactory-rb $SEMVER_NUMBER
+          jf rbc --build-name=jfrog-software-supply-chain-example-artifactory --build-number=${{ github.run_id }} jfrog-software-supply-chain-example-artifactory-rb ${{ env.SEMVER_NUMBER }}
   rb-promotion:
     needs: [rb-creation,semver-generation]
     runs-on: ubuntu-latest
@@ -181,4 +181,4 @@ jobs:
       #     jf c add $SERVER_ID_WEST --url=$JF_URL_WEST --access-token=$JF_ACCESS_TOKEN --interactive=false 
       - name: Promote the RB created on the previous step
         run: |
-          jf rbp --signing-key=$SIG_KEY jfrog-software-supply-chain-example-artifactory-rb $SEMVER_NUMBER PROD
+          jf rbp --signing-key=$SIG_KEY jfrog-software-supply-chain-example-artifactory-rb ${{ env.SEMVER_NUMBER }} PROD
