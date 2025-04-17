@@ -90,6 +90,8 @@ jobs:
   semver-generation:
     needs: build
     runs-on: ubuntu-latest
+    outputs:
+      semver-number: ${{ steps.version.outputs.SEMVER_NUMBER }}
     steps:
       - name: Checkout Code
         uses: actions/checkout@v3
@@ -98,7 +100,10 @@ jobs:
           fetch-depth: 0                # fetch the whole repo history
       - name: Git Version
         id: version
-        uses: codacy/git-version@2.7.1     
+        uses: codacy/git-version@2.7.1
+      - name: Set SEMVER_NUMBER
+        run: |
+          echo "SEMVER_NUMBER=$semver_number" >> $GITHUB_OUTPUT
   build-promotion-test:
     needs: build
     runs-on: ubuntu-latest
@@ -146,8 +151,10 @@ jobs:
         run: |
           jf rt bpr jfrog-software-supply-chain-example-artifactory ${{ github.run_id }} docker-prod-local
   rb-creation:
-    needs: build-promotion-prod
+    needs: [build-promotion-prod, semver-generation]
     runs-on: ubuntu-latest
+    env:
+      SEMVER_NUMBER: ${{ needs.semver-generation.outputs.semver-number }}
     steps:
       - name: Setup JFrog CLI 
         uses: jfrog/setup-jfrog-cli@v4
@@ -158,10 +165,12 @@ jobs:
       #     jf c add $SERVER_ID_WEST --url=$JF_URL_WEST --access-token=$JF_ACCESS_TOKEN --interactive=false 
       - name: Create a RB from the build
         run: |
-          jf rbc --build-name=jfrog-software-supply-chain-example-artifactory --build-number=${{ github.run_id }} jfrog-software-supply-chain-example-artifactory-rb ${{ steps.version.outputs.version }}
+          jf rbc --build-name=jfrog-software-supply-chain-example-artifactory --build-number=${{ github.run_id }} jfrog-software-supply-chain-example-artifactory-rb $SEMVER_NUMBER
   rb-promotion:
-    needs: rb-creation
+    needs: [rb-creation,semver-generation]
     runs-on: ubuntu-latest
+    env:
+      SEMVER_NUMBER: ${{ needs.semver-generation.outputs.semver-number }}
     steps:
       - name: Setup JFrog CLI 
         uses: jfrog/setup-jfrog-cli@v4
@@ -172,4 +181,4 @@ jobs:
       #     jf c add $SERVER_ID_WEST --url=$JF_URL_WEST --access-token=$JF_ACCESS_TOKEN --interactive=false 
       - name: Promote the RB created on the previous step
         run: |
-          jf rbp --signing-key=$SIG_KEY jfrog-software-supply-chain-example-artifactory-rb ${{ steps.version.outputs.version }} PROD
+          jf rbp --signing-key=$SIG_KEY jfrog-software-supply-chain-example-artifactory-rb $SEMVER_NUMBER PROD
