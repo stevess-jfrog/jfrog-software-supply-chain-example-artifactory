@@ -86,7 +86,19 @@ jobs:
       # More info on this command - https://docs.jfrog-applications.jfrog.io/jfrog-applications/jfrog-cli/cli-for-jfrog-security/scan-published-builds#scanning-published-builds     
       - name: Xray Scan Build
         run: |
-          jf build-scan jfrog-software-supply-chain-example-artifactory ${{ github.run_id }}    
+          jf build-scan jfrog-software-supply-chain-example-artifactory ${{ github.run_id }}
+  semver-generation:
+    needs: build
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v3
+        with:
+          ref: ${{ github.head_ref }}   # checkout the correct branch name
+          fetch-depth: 0                # fetch the whole repo history
+      - name: Git Version
+        id: version
+        uses: codacy/git-version@2.7.1     
   build-promotion-test:
     needs: build
     runs-on: ubuntu-latest
@@ -146,7 +158,7 @@ jobs:
       #     jf c add $SERVER_ID_WEST --url=$JF_URL_WEST --access-token=$JF_ACCESS_TOKEN --interactive=false 
       - name: Create a RB from the build
         run: |
-          jf rbc --build-name=jfrog-software-supply-chain-example-artifactory --build-number=${{ github.run_id }} jfrog-software-supply-chain-example-artifactory-rb 1.0.0
+          jf rbc --build-name=jfrog-software-supply-chain-example-artifactory --build-number=${{ github.run_id }} jfrog-software-supply-chain-example-artifactory-rb ${{ steps.version.outputs.version }}
   rb-promotion:
     needs: rb-creation
     runs-on: ubuntu-latest
@@ -160,4 +172,4 @@ jobs:
       #     jf c add $SERVER_ID_WEST --url=$JF_URL_WEST --access-token=$JF_ACCESS_TOKEN --interactive=false 
       - name: Promote the RB created on the previous step
         run: |
-          jf rbp --signing-key=$SIG_KEY jfrog-software-supply-chain-example-artifactory-rb 1.0.0 PROD
+          jf rbp --signing-key=$SIG_KEY jfrog-software-supply-chain-example-artifactory-rb ${{ steps.version.outputs.version }} PROD
